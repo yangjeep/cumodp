@@ -15,13 +15,45 @@ The archive contains CUDA/GPU work around modular polynomial computation, includ
 
 The uploaded archive retained `.svn/wc.db` but did **not** retain the `.svn/pristine` file bodies. The database records 354 versioned files at r230; 229 of those files are physically present in the recovered archive and 125 are missing from the working tree/archive.
 
-No synthetic SVN-to-Git history has been created. This Git repository is a preservation snapshot of the files that were actually recovered.
+The recovered snapshot on `main` preserves the files that were actually found. Missing versioned files have not been synthesized from later CUMODP mirrors.
 
-One present file differs from the r230 checksum recorded in `wc.db`:
-
-- `cumodp/tests/cumodp-create-test`
+The apparent checksum mismatch for `cumodp/tests/cumodp-create-test` is explained by its SVN special/symlink representation in the archived working copy rather than a known source edit.
 
 See `.svn-recovery/nodes.csv` and `.svn-recovery/missing-versioned-files.txt` for the recovered SVN metadata.
+
+## Partial SVN history reconstruction
+
+The branch `svn-recovered-history` is a metadata-based reconstruction using the surviving `wc.db` information.
+
+It contains:
+
+- **88** observable file last-change SVN revision markers from **r2** to **r230**
+- **42** revision markers attributed to `jyang425`
+- original recorded SVN timestamps
+- original SVN author identifiers in every commit message
+- **229** recovered versioned files at the r230 branch tip
+
+For authors whose historical email address is directly evidenced, the reconstruction maps the SVN username to the corresponding name/email. For `jyang425`, commits are authored as **Jiajian Yang <yangjeep@gmail.com>**. The Git committer is explicitly `SVN Metadata Reconstruction`.
+
+### Important limitation
+
+This branch is **not the original SVN diff history**.
+
+A Subversion working-copy database at r230 records the last-changed revision of each path, not every earlier version of that path. Because the old repository and pristine bodies are unavailable, the reconstruction cannot know the contents of a file at intermediate revisions.
+
+Accordingly, each reconstructed revision:
+
+1. uses the real SVN revision number, author identifier, and timestamp from `wc.db`;
+2. introduces only recovered paths whose r230 metadata says that revision was their last change;
+3. uses the recovered r230 file bytes for those paths;
+4. creates an empty metadata commit when all paths associated with an observed revision are missing from the archive;
+5. states these limitations directly in the commit message.
+
+The process is reproducible from:
+
+- `.svn-recovery/nodes.csv`
+- `.svn-recovery/revisions.csv`
+- `.svn-recovery/reconstruct_history.py`
 
 ## Authorship / provenance
 
